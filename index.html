@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="LatentLoop improves looped MoE models through asymmetric compute allocation: a compressed first visit, a full-resolution second visit, and matched resource budgets.">
+  <meta property="og:title" content="LatentLoop — Asymmetric Compute Allocation">
+  <meta property="og:description" content="Shared weights. Different roles. A visual introduction to LatentLoop, from residual asymmetry to more efficient scaling.">
+  <meta property="og:type" content="website">
+  <title>LatentLoop · Asymmetric Compute Allocation</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script src="site-config.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#abstract">Skip to the research</a>
+  <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="icon-external" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
+    <symbol id="icon-paper" viewBox="0 0 24 24"><path d="M14 3H5v18h14V8Zm0 0v5h5M8 12h8M8 16h8"/></symbol>
+    <symbol id="icon-expand" viewBox="0 0 24 24"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"/></symbol>
+    <symbol id="icon-github" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.76-.24.76-.54v-2.1c-3.12.68-3.78-1.32-3.78-1.32-.51-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.68.08-.68 1.13.08 1.72 1.16 1.72 1.16 1 1.72 2.63 1.22 3.27.94.1-.73.39-1.22.71-1.5-2.49-.28-5.1-1.24-5.1-5.54 0-1.23.44-2.23 1.16-3.02-.12-.28-.5-1.43.1-2.98 0 0 .95-.3 3.08 1.15a10.7 10.7 0 0 1 5.6 0c2.13-1.45 3.08-1.15 3.08-1.15.6 1.55.22 2.7.1 2.98.72.8 1.16 1.8 1.16 3.02 0 4.31-2.62 5.25-5.12 5.53.4.35.76 1.03.76 2.08v3.08c0 .3.2.65.77.54A11.2 11.2 0 0 0 12 .8Z"/></symbol>
+  </svg>
+
+  <header class="site-header">
+    <nav class="nav-shell container" aria-label="Main navigation">
+      <a class="brand" href="#top" aria-label="LatentLoop home">
+        <svg class="brand-symbol" viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M25 9H15a9 9 0 1 0 0 18h7"/><path d="M11 27h10a9 9 0 1 0 0-18h-7"/><path class="symbol-accent" d="m22 5 4 4-4 4M14 23l-4 4 4 4"/></svg>
+        <span>LatentLoop</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open navigation"><span></span><span></span></button>
+      <div class="nav-links" id="nav-links">
+        <a href="#abstract">Abstract</a>
+        <a href="#observation">Observation</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#scaling">Scaling</a>
+        <a class="nav-paper" href="assets/downloads/latentloop-paper.pdf" data-paper-link target="_blank" rel="noopener">Paper <svg class="icon"><use href="#icon-external"/></svg></a>
+      </div>
+    </nav>
+    <div class="reading-progress" aria-hidden="true"></div>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="project-title">
+      <div class="container hero-content">
+        <h1 id="project-title"><span class="project-name">LatentLoop:</span> Scaling Looped MoE Models with Asymmetric Compute Allocation</h1>
+        <div class="hero-actions">
+          <a class="button button-primary" href="assets/downloads/latentloop-paper.pdf" data-paper-link target="_blank" rel="noopener"><svg class="icon"><use href="#icon-paper"/></svg> Paper <svg class="icon action-arrow"><use href="#icon-external"/></svg></a>
+          <a class="button button-secondary code-link" href="https://github.com/lcqysl/LatentLoop" target="_blank" rel="noopener"><svg class="icon"><use href="#icon-github"/></svg><span data-code-label>Code</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="abstract-section section-border" id="abstract" aria-labelledby="abstract-title">
+      <div class="container">
+        <div class="abstract-layout">
+          <div class="section-intro"><div class="eyebrow">OVERVIEW</div><h2 id="abstract-title">Abstract</h2><p class="abstract-side-note">A different allocation<br>for a shared model.</p></div>
+          <div class="abstract-copy">
+            <p>Looped Mixture-of-Experts (MoE) models combine parameter reuse with sparse computation to improve performance under matched budgets. Prior work demonstrates that different loop visits can play different roles even when they share parameters. To probe the contributions of different loop visits, we learn separate residual coefficients in a model that applies a shared block twice, observing a smaller scale in the first visit. Fixed coefficient experiments show that reducing the first visit’s scale preserves or improves performance, whereas the same reductions to the second hurt it.</p>
+            <p>This asymmetry motivates us to explore <strong>asymmetric compute allocation</strong>. We propose <strong>LatentLoop</strong>, which compresses the first visit’s sequence, retains full resolution in the second, and reallocates saved computation to increase the hidden size. We further learn how strongly the first visit updates the full sequence, and share MoE weights across visits while using separate attention parameters to accommodate their different sequence resolutions.</p>
+            <p>Across 15 configurations spanning 1.3B–7B parameters, with the largest budget exceeding 10<sup>21</sup> FLOPs, LatentLoop consistently lowers validation NLL. At a fitted NLL of 1.988, predicted compute savings are <strong>19.0%</strong> relative to MoE Base and <strong>7.9%</strong> relative to MoE Loop. It also improves average scores on nine benchmarks at all sizes in 0-shot and 5-shot settings. These results suggest asymmetric compute allocation is a promising direction for looped MoE models.</p>
+          </div>
+        </div>
+        <div class="research-scope" aria-label="Experimental scope">
+          <div><span class="scope-value">15</span><span class="scope-label">matched budget configurations</span></div>
+          <div><span class="scope-value">1.3B<span class="scope-dash">—</span>7B</span><span class="scope-label">model parameter range</span></div>
+          <div><span class="scope-value">&gt;10<sup>21</sup></span><span class="scope-label">FLOPs at the largest budget</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="story-section section-border" id="observation" aria-labelledby="observation-title">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div class="heading-main"><div class="eyebrow"><span class="chapter-index">01</span> THE OBSERVATION</div><h2 id="observation-title">Shared weights.<br><span class="text-accent">Asymmetric updates.</span></h2></div>
+          <p class="section-description">We give each visit a learnable residual coefficient, initialized at one. At both model sizes, the first visit learns a much smaller update scale than the second.</p>
+        </div>
+        <figure class="research-figure wide-figure reveal">
+          <div class="figure-bar"><span>FIG. 02A <span class="bar-divider">/</span> LEARNED RESIDUAL COEFFICIENTS</span><button class="expand-button" type="button" data-figure="learned-residuals" aria-label="Expand learned residual coefficient curves"><svg class="icon"><use href="#icon-expand"/></svg><span>Expand</span></button></div>
+          <button class="figure-image-button" type="button" data-figure="learned-residuals" aria-label="View the learned residual coefficient curves at full size"><img src="assets/figures/learned-residuals.svg" width="1110" height="460" alt="Training trajectories for two learned residual coefficients at 1.3B and 3B. In both models, the first-visit coefficient falls far below the second-visit coefficient." loading="lazy"></button>
+          <figcaption><span>Both visits share the middle block’s parameters; their residual scales are learned independently.</span><span class="caption-meta">1.3B / 20B tokens · 3B / 40B tokens</span></figcaption>
+        </figure>
+        <div class="finding-line reveal"><span class="finding-icon" aria-hidden="true">↳</span><p>The visits reuse parameters, but prefer <strong>different update strengths</strong>.</p></div>
+      </div>
+    </section>
+
+    <section class="story-section fixed-section" id="fixed-coefficients" aria-labelledby="fixed-title">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div class="heading-main"><div class="eyebrow"><span class="chapter-index">02</span> A CONTROLLED COMPARISON</div><h2 id="fixed-title">A smaller first update.<br><span class="text-accent">A better loss.</span></h2></div>
+          <p class="section-description">Fix one visit’s coefficient at one and vary the other. Reducing the first coefficient preserves or improves NLL; applying the same reduction to the second hurts performance.</p>
+        </div>
+        <figure class="research-figure wide-figure reveal">
+          <div class="figure-bar"><span>FIG. 02B <span class="bar-divider">/</span> FIXED RESIDUAL COEFFICIENTS</span><button class="expand-button" type="button" data-figure="fixed-residuals" aria-label="Expand fixed residual coefficient heatmaps"><svg class="icon"><use href="#icon-expand"/></svg><span>Expand</span></button></div>
+          <button class="figure-image-button" type="button" data-figure="fixed-residuals" aria-label="View fixed residual coefficient heatmaps at full size"><img src="assets/figures/fixed-residuals.svg" width="1110" height="460" alt="Validation NLL heatmaps at 1.3B and 3B across fixed first- and second-visit residual coefficients. A first-visit coefficient of 0.25 with a second-visit coefficient of 1 gives the lowest NLL among the tested settings." loading="lazy"></button>
+          <figcaption><span>The same coefficient change has different effects depending on which visit receives it.</span><span class="caption-meta">Lower NLL is better</span></figcaption>
+        </figure>
+        <div class="coefficient-note reveal"><span class="equation-badge">(α₁, α₂) = (0.25, 1)</span><p>The best tested setting at both sizes: approximately <strong>0.008</strong> lower NLL at 1.3B and <strong>0.003</strong> at 3B relative to (1, 1).</p></div>
+        <div class="research-question reveal"><span class="eyebrow">FROM OBSERVATION TO DESIGN</span><p>Could the two visits also benefit from<br><span>different compute allocations?</span></p><svg class="icon"><use href="#icon-arrow"/></svg></div>
+      </div>
+    </section>
+
+    <section class="architecture-section section-border" id="architecture" aria-labelledby="architecture-title">
+      <div class="container architecture-layout">
+        <div class="architecture-content">
+          <div class="eyebrow"><span class="chapter-index">03</span> THE ARCHITECTURE</div>
+          <h2 id="architecture-title">Compress once.<br><span class="text-accent">Refine at full<br class="desktop-break"> resolution.</span></h2>
+          <p class="architecture-lead">The first visit operates on a shorter latent sequence. The second processes every token. We reallocate the saved computation to <strong>a wider model</strong>.</p>
+          <ol class="method-steps">
+            <li><span class="step-number">01</span><div><h3>Encode the sequence</h3><p>A simple mean encoder aggregates pairs of states into T/2 latent positions, preserving the channel width.</p></div></li>
+            <li><span class="step-number">02</span><div><h3>Compute in latent space</h3><p>The first visit processes fewer positions, using the full model width and the same number of active experts per position.</p></div></li>
+            <li><span class="step-number">03</span><div><h3>Calibrate the writeback</h3><p>Learned coefficients control how strongly the latent increment updates each channel and receiver position, with causal alignment.</p></div></li>
+            <li><span class="step-number">04</span><div><h3>Revisit the full sequence</h3><p>The second visit processes all T positions. MoE blocks are shared; attention blocks have independent parameters.</p></div></li>
+          </ol>
+          <div class="budget-note"><span class="eyebrow">MATCHED RESOURCE BUDGETS</span><p>Stored parameters <span>·</span> KV cache<br>FLOPs per step <span>·</span> Total training FLOPs</p></div>
+        </div>
+        <figure class="research-figure architecture-figure reveal">
+          <div class="figure-bar"><span>FIG. 03 <span class="bar-divider">/</span> LATENTLOOP</span><button class="expand-button" type="button" data-figure="architecture" aria-label="Expand the LatentLoop architecture"><svg class="icon"><use href="#icon-expand"/></svg><span>Expand</span></button></div>
+          <button class="figure-image-button" type="button" data-figure="architecture" aria-label="View the LatentLoop architecture at full size"><img src="assets/figures/architecture.svg" width="768" height="1298" alt="LatentLoop architecture, read from bottom to top: entry block, mean encoder, compressed first visit, calibrated delta writeback to the preserved full-token state, full-resolution second visit, and exit block. MoE weights are shared across visits." loading="lazy"></button>
+          <figcaption>A compressed first visit, followed by a full-resolution second visit.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="scaling-section section-border" id="scaling" aria-labelledby="scaling-title">
+      <div class="container">
+        <div class="section-heading reveal"><div class="heading-main"><div class="eyebrow"><span class="chapter-index">04</span> THE RESULT</div><h2 id="scaling-title">Better allocation.<br><span class="text-accent">More efficient scaling.</span></h2></div><p class="section-description">LatentLoop achieves lower validation NLL at all 15 matched budget endpoints. Fitted compute-optimal frontiers quantify the computation needed to reach the same loss.</p></div>
+        <div class="scaling-layout">
+          <figure class="research-figure scaling-figure reveal">
+            <div class="figure-bar"><span>FIG. 04 <span class="bar-divider">/</span> FITTED SCALING FRONTIERS</span><button class="expand-button" type="button" data-figure="scaling-frontier" aria-label="Expand fitted scaling frontiers"><svg class="icon"><use href="#icon-expand"/></svg><span>Expand</span></button></div>
+            <button class="figure-image-button" type="button" data-figure="scaling-frontier" aria-label="View fitted scaling frontiers at full size"><img src="assets/figures/scaling-frontier.svg" width="1000" height="634" alt="Fitted compute-optimal NLL curves for MoE Base, MoE Loop, and LatentLoop. At equal fitted NLL, LatentLoop uses 19.0 percent less compute than MoE Base and 7.9 percent less than MoE Loop." loading="lazy"></button>
+            <figcaption>Solid segments stay within the observed model/data allocation hull. Dashed segments involve extrapolation.</figcaption>
+          </figure>
+          <div class="compute-savings reveal">
+            <div class="eyebrow">PREDICTED COMPUTE SAVINGS</div>
+            <div class="saving-metric"><span class="saving-value">19.0<span>%</span></span><span class="saving-reference">relative to MoE Base</span><div class="saving-track" aria-hidden="true"><span style="--saving: 81%"></span><i></i></div></div>
+            <div class="saving-metric"><span class="saving-value">7.9<span>%</span></span><span class="saving-reference">relative to MoE Loop</span><div class="saving-track second-track" aria-hidden="true"><span style="--saving: 92.1%"></span><i></i></div></div>
+            <p class="saving-context">At the same fitted NLL of <strong>1.988</strong>, within the observed model and data allocation range. LatentLoop uses approximately <strong>1.85 × 10²⁰ FLOPs</strong>.</p>
+          </div>
+        </div>
+        <div class="result-summary reveal"><span class="summary-symbol" aria-hidden="true">↗</span><p>The improvement also carries over to <strong>nine downstream benchmarks</strong>, with higher average scores at all three sizes in both <strong>0-shot and 5-shot</strong> evaluation.</p></div>
+      </div>
+    </section>
+
+    <section class="closing-section section-border">
+      <div class="container closing-layout"><div><div class="eyebrow">LATENTLOOP</div><h2>Same model family.<br>A different way to spend compute.</h2></div><a class="button button-primary" href="assets/downloads/latentloop-paper.pdf" data-paper-link target="_blank" rel="noopener">Explore the full paper <svg class="icon"><use href="#icon-external"/></svg></a></div>
+    </section>
+  </main>
+
+  <footer class="site-footer section-border"><div class="container footer-layout"><a class="footer-brand" href="#top">LatentLoop<span>.</span></a><p>Supported by the Shanghai Artificial Intelligence Laboratory.</p><a class="back-top" href="#top">Back to top ↑</a></div></footer>
+
+  <dialog id="figure-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-toolbar"><h2 id="dialog-title">Research figure</h2><button class="dialog-close" type="button" aria-label="Close expanded figure">×</button></div>
+    <div class="dialog-image-stage"><img id="dialog-image" src="assets/figures/learned-residuals.svg" alt=""></div>
+    <div class="dialog-footer"><p id="dialog-caption"></p><a id="dialog-original" href="assets/figures/learned-residuals.pdf" target="_blank" rel="noopener">Original PDF <svg class="icon"><use href="#icon-external"/></svg></a></div>
+  </dialog>
+</body>
+</html>
