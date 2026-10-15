@@ -23,7 +23,7 @@ Source repository: https://github.com/LatentLoop-Project/latentloop-project.gith
 
 ## Set the public links
 
-Edit site-config.js to update the public links. The Code button points to https://github.com/lcqysl/LatentLoop. paperUrl points to the included manuscript PDF; replace it with the arXiv link after publication if preferred.
+Edit site-config.js to update the public links. The Code button points to https://github.com/lcqysl/LatentLoop. paperUrl points to the published paper at https://arxiv.org/abs/2610.19975. Keep the Paper links in index.html in sync so they also work without JavaScript.
 
 ## Content and assets
 
@@ -31,9 +31,9 @@ Edit site-config.js to update the public links. The Code button points to https:
 - styles.css: responsive appearance and reduced-motion support.
 - script.js: mobile navigation, reading progress, and accessible figure dialogs.
 - assets/figures/: original paper figures as vector SVGs, plus their original PDFs.
-- assets/downloads/latentloop-paper.pdf: manuscript snapshot used by the Paper buttons.
+- assets/downloads/latentloop-paper.pdf: local manuscript snapshot; the Paper buttons link to arXiv.
 - assets/fonts/: self-hosted Inter and Space Grotesk fonts, with their OFL licenses.
 
 Figure 2 is separated into learned residual curves and fixed coefficient heatmaps. These are followed by the architecture (Figure 3) and fitted scaling frontiers (Figure 4). All numbers are taken from the manuscript; no new results are introduced.
 
-To update a figure, replace its SVG and PDF using the same filenames. To update the paper, replace the included manuscript PDF. No external analytics, framework, or runtime service is used.
+To update a figure, replace its SVG and PDF using the same filenames. To update the public paper link, edit site-config.js and the Paper links in index.html. No external analytics, framework, or runtime service is used.
