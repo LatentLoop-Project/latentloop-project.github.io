@@ -16,6 +16,11 @@
       link.querySelector('[data-code-label]').textContent = 'Code';
     });
   }
+  if (config.modelUrl && /^https?:\/\//i.test(config.modelUrl)) {
+    document.querySelectorAll('[data-model-link]').forEach(function (link) {
+      link.href = config.modelUrl;
+    });
+  }
 
   var menuButton = document.querySelector('.menu-toggle');
   var menu = document.getElementById('nav-links');
